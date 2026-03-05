@@ -1,0 +1,39 @@
+# =============================================================================
+# 청약메이트 Supabase 로컬 개발 설정
+# supabase init 실행 시 생성되는 기본 설정 파일
+# =============================================================================
+
+[project]
+id = ""  # Supabase 대시보드에서 프로젝트 생성 후 입력
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/**"]
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false  # MVP에서는 이메일 인증 비활성화
+
+[auth.external.google]
+enabled = false
+
+[storage]
+enabled = true
+file_size_limit = "5MB"
