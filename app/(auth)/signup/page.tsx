@@ -2,7 +2,19 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { AlertCircle, CheckCircle2, Loader2, Mail } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { FadeInUp } from '@/components/ui/motion';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
@@ -50,110 +62,137 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="rounded-lg border bg-card p-6 shadow-sm">
-        <div className="text-center">
-          <h2 className="text-lg font-semibold">이메일 인증</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            인증 이메일을 확인해주세요.
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            <strong className="font-medium text-foreground">{email}</strong>
-            로 인증 링크를 발송했습니다.
-          </p>
-          <Link
-            href="/login"
-            className="mt-6 inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            로그인으로 이동
-          </Link>
-        </div>
-      </div>
+      <FadeInUp duration={0.4}>
+        <Card className="shadow-lg rounded-xl border-border/50">
+          <CardContent className="flex flex-col items-center gap-5 px-8 py-10 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+              <Mail className="h-8 w-8 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-bold">이메일 인증을 확인해주세요</h2>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                <strong className="font-semibold text-foreground">
+                  {email}
+                </strong>
+                으로 인증 링크를 발송했습니다.
+                <br />
+                이메일을 확인하고 인증을 완료해주세요.
+              </p>
+            </div>
+            <Button asChild className="mt-2 h-10 w-full font-semibold">
+              <Link href="/login">로그인으로 이동</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </FadeInUp>
     );
   }
 
   return (
-    <div className="rounded-lg border bg-card p-6 shadow-sm">
-      <h2 className="mb-6 text-center text-lg font-semibold">회원가입</h2>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label
-            htmlFor="email"
-            className="mb-1 block text-sm font-medium"
-          >
-            이메일
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoComplete="email"
-            placeholder="name@example.com"
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="password"
-            className="mb-1 block text-sm font-medium"
-          >
-            비밀번호
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="new-password"
-            placeholder="최소 6자 이상"
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="confirm-password"
-            className="mb-1 block text-sm font-medium"
-          >
-            비밀번호 확인
-          </label>
-          <input
-            id="confirm-password"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            autoComplete="new-password"
-            placeholder="비밀번호를 다시 입력하세요"
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          />
-        </div>
-
-        {error && (
-          <p className="text-sm text-destructive" role="alert">
-            {error}
+    <FadeInUp duration={0.4}>
+      <Card className="shadow-lg rounded-xl border-border/50">
+        <CardHeader className="pb-4 pt-6 text-center">
+          <CardTitle className="text-xl font-bold">회원가입</CardTitle>
+          <p className="mt-1 text-sm text-muted-foreground">
+            청약메이트와 함께 내 집 마련을 시작하세요
           </p>
-        )}
+        </CardHeader>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="inline-flex h-9 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-        >
-          {loading ? '가입 중...' : '회원가입'}
-        </button>
-      </form>
+        <CardContent>
+          <form
+            id="signup-form"
+            onSubmit={handleSubmit}
+            className="space-y-5"
+            noValidate
+          >
+            <div className="space-y-1.5">
+              <Label htmlFor="email">이메일</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+                placeholder="name@example.com"
+                disabled={loading}
+                className="h-10"
+              />
+            </div>
 
-      <p className="mt-4 text-center text-sm text-muted-foreground">
-        이미 계정이 있으신가요?{' '}
-        <Link href="/login" className="text-primary hover:underline">
-          로그인
-        </Link>
-      </p>
-    </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="password">비밀번호</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="new-password"
+                placeholder="최소 6자 이상"
+                disabled={loading}
+                className="h-10"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="confirm-password">비밀번호 확인</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                autoComplete="new-password"
+                placeholder="비밀번호를 다시 입력하세요"
+                disabled={loading}
+                className="h-10"
+              />
+            </div>
+
+            {error && (
+              <div
+                className="flex items-start gap-2 rounded-lg bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
+                role="alert"
+                aria-live="polite"
+              >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="h-10 w-full font-semibold"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  가입 중...
+                </>
+              ) : (
+                '회원가입'
+              )}
+            </Button>
+          </form>
+        </CardContent>
+
+        <CardFooter className="flex justify-center border-t pb-6 pt-4">
+          <p className="text-sm text-muted-foreground">
+            이미 계정이 있으신가요?{' '}
+            <Link
+              href="/login"
+              className="font-medium text-primary hover:text-primary/80 hover:underline transition-colors"
+            >
+              로그인
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
+    </FadeInUp>
   );
 }

@@ -5,7 +5,8 @@
       "name": "next-dev",
       "runtimeExecutable": "cmd",
       "runtimeArgs": ["/c", "npm", "run", "dev"],
-      "port": 3000
+      "port": 3000,
+      "autoPort": true
     }
   ]
 }

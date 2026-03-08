@@ -3,16 +3,29 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { FadeInUp } from '@/components/ui/motion';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const rawRedirect = searchParams.get('redirect') || '/complexes';
   // 오픈 리다이렉트 방지: 상대 경로만 허용
-  const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//')
-    ? rawRedirect
-    : '/complexes';
+  const redirectTo =
+    rawRedirect.startsWith('/') && !rawRedirect.startsWith('//')
+      ? rawRedirect
+      : '/complexes';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -50,69 +63,92 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="rounded-lg border bg-card p-6 shadow-sm">
-      <h2 className="mb-6 text-center text-lg font-semibold">로그인</h2>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label
-            htmlFor="email"
-            className="mb-1 block text-sm font-medium"
-          >
-            이메일
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoComplete="email"
-            placeholder="name@example.com"
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="password"
-            className="mb-1 block text-sm font-medium"
-          >
-            비밀번호
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-            placeholder="비밀번호를 입력하세요"
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          />
-        </div>
-
-        {error && (
-          <p className="text-sm text-destructive" role="alert">
-            {error}
+    <FadeInUp duration={0.4}>
+      <Card className="shadow-lg rounded-xl border-border/50">
+        <CardHeader className="pb-4 pt-6 text-center">
+          <CardTitle className="text-xl font-bold">로그인</CardTitle>
+          <p className="mt-1 text-sm text-muted-foreground">
+            계정에 로그인하여 서비스를 이용하세요
           </p>
-        )}
+        </CardHeader>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="inline-flex h-9 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-        >
-          {loading ? '로그인 중...' : '로그인'}
-        </button>
-      </form>
+        <CardContent>
+          <form
+            id="login-form"
+            onSubmit={handleSubmit}
+            className="space-y-5"
+            noValidate
+          >
+            <div className="space-y-1.5">
+              <Label htmlFor="email">이메일</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+                placeholder="name@example.com"
+                disabled={loading}
+                className="h-10"
+              />
+            </div>
 
-      <p className="mt-4 text-center text-sm text-muted-foreground">
-        계정이 없으신가요?{' '}
-        <Link href="/signup" className="text-primary hover:underline">
-          회원가입
-        </Link>
-      </p>
-    </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="password">비밀번호</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+                placeholder="비밀번호를 입력하세요"
+                disabled={loading}
+                className="h-10"
+              />
+            </div>
+
+            {error && (
+              <div
+                className="flex items-start gap-2 rounded-lg bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
+                role="alert"
+                aria-live="polite"
+              >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="h-10 w-full font-semibold"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  로그인 중...
+                </>
+              ) : (
+                '로그인'
+              )}
+            </Button>
+          </form>
+        </CardContent>
+
+        <CardFooter className="flex justify-center border-t pb-6 pt-4">
+          <p className="text-sm text-muted-foreground">
+            계정이 없으신가요?{' '}
+            <Link
+              href="/signup"
+              className="font-medium text-primary hover:text-primary/80 hover:underline transition-colors"
+            >
+              회원가입
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
+    </FadeInUp>
   );
 }
