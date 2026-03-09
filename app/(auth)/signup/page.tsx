@@ -97,7 +97,7 @@ export default function SignupPage() {
         <CardHeader className="pb-4 pt-6 text-center">
           <CardTitle className="text-xl font-bold">회원가입</CardTitle>
           <p className="mt-1 text-sm text-muted-foreground">
-            청약메이트와 함께 내 집 마련을 시작하세요
+            청약플러스와 함께 내 집 마련을 시작하세요
           </p>
         </CardHeader>
 

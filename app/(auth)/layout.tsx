@@ -47,7 +47,7 @@ export default function AuthLayout({
             <Building2 className="h-6 w-6 text-white" />
           </div>
           <span className="text-2xl font-bold tracking-tight text-white">
-            청약메이트
+            청약플러스
           </span>
         </div>
 
@@ -62,7 +62,7 @@ export default function AuthLayout({
             <p className="text-base leading-relaxed text-white/70">
               복잡한 청약 자격, 이제 직접 분석하지 않아도 됩니다.
               <br />
-              청약메이트가 당신의 조건을 정밀하게 진단합니다.
+              청약플러스가 당신의 조건을 정밀하게 진단합니다.
             </p>
           </div>
 
@@ -116,7 +116,7 @@ export default function AuthLayout({
             <Building2 className="h-7 w-7 text-primary-foreground" />
           </div>
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-foreground">청약메이트</h1>
+            <h1 className="text-2xl font-bold text-foreground">청약플러스</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               내 삶의 첫 집, 청약으로 시작하세요
             </p>
