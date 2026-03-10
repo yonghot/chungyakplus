@@ -1,9 +1,9 @@
-# 청약메이트 아키텍처 설계서
+# 청약플러스 아키텍처 설계서
 
 > **작성일**: 2026-03-04
-> **상태**: MVP 구현 완료
-> **대상**: PRD v1.0 기반
-> **최종 업데이트**: 2026-03-04 (Phase 8 - 최종 검증 완료)
+> **상태**: MVP 완료, Phase 2 진행 중
+> **대상**: PRD v2.1 기반
+> **최종 업데이트**: 2026-03-10 (+가치 분석 엔진 구현 완료)
 
 ---
 
@@ -840,7 +840,7 @@ supabase/
 
 ## 17. +가치 분석 엔진 아키텍처
 
-> **상태**: 설계 완료 / 구현 예정 (Phase 2)
+> **상태**: ✅ 구현 완료 (2026-03-10 프로덕션 배포)
 > **관련 PRD**: 4.1절 "+가치 — 물건 미래 가치 분석"
 > **플랜 제한**: Plus 이상 (Free 비활성)
 
@@ -1391,25 +1391,25 @@ CREATE INDEX idx_value_analysis_complex_latest
 
 ### 17.10 구현 체크리스트
 
-Phase 2 착수 시 다음 순서로 구현한다.
+2026-03-10 구현 완료. DB 마이그레이션(#11)과 테스트(#16)는 별도 진행 예정.
 
 ```
-[ ] 1. constants/value-analysis-constants.ts — 등급 색상, 팩터 레이블 상수
-[ ] 2. lib/value-analysis/constants/regional-defaults.ts — 17개 광역시도 기본값
-[ ] 3. lib/value-analysis/types.ts — 엔진 내부 타입
-[ ] 4. lib/value-analysis/normalizer.ts — 정규화 순수 함수
-[ ] 5. lib/value-analysis/grade-mapper.ts — 등급 매핑 순수 함수
-[ ] 6. lib/value-analysis/factors/pricing.ts — 분양가 팩터
-[ ] 7. lib/value-analysis/factors/location.ts — 입지 팩터
-[ ] 8. lib/value-analysis/factors/future-price.ts — 미래 시세 팩터
-[ ] 9. lib/value-analysis/index.ts — analyzeValueScore() 진입점
-[ ] 10. lib/services/value-analysis-service.ts — 스텁 → 실제 구현 교체
-[ ] 11. supabase/migrations/20260309000001_add_value_analysis.sql — DB 컬럼 추가
-[ ] 12. app/api/complexes/[id]/value/route.ts — API 라우트
-[ ] 13. hooks/use-value-analysis.ts — TanStack Query 훅
-[ ] 14. components/features/value-analysis/ — UI 컴포넌트 5개
-[ ] 15. app/(main)/complexes/[id]/value/page.tsx — 페이지
-[ ] 16. vitest 테스트 — normalizer, grade-mapper, 각 팩터 계산 함수
+[x] 1. constants/value-analysis-constants.ts — 등급 색상, 팩터 레이블 상수
+[x] 2. lib/value-analysis/constants/regional-defaults.ts — 17개 광역시도 기본값
+[x] 3. lib/value-analysis/types.ts — 엔진 내부 타입
+[x] 4. lib/value-analysis/normalizer.ts — 정규화 순수 함수
+[x] 5. lib/value-analysis/grade-mapper.ts — 등급 매핑 순수 함수
+[x] 6. lib/value-analysis/factors/pricing.ts — 분양가 팩터
+[x] 7. lib/value-analysis/factors/location.ts — 입지 팩터
+[x] 8. lib/value-analysis/factors/future-price.ts — 미래 시세 팩터
+[x] 9. lib/value-analysis/index.ts — analyzeValueScore() 진입점
+[x] 10. lib/services/value-analysis-service.ts — 스텁 → 실제 구현 교체
+[ ] 11. supabase/migrations — DB 컬럼 추가 (별도 진행)
+[x] 12. app/api/complexes/[id]/value/route.ts — API 라우트
+[x] 13. hooks/use-value-analysis.ts — TanStack Query 훅
+[x] 14. components/features/value-analysis/ — UI 컴포넌트 4개
+[x] 15. app/(main)/complexes/[id]/value/page.tsx — 페이지
+[ ] 16. vitest 테스트 — normalizer, grade-mapper, 각 팩터 계산 함수 (별도 진행)
 ```
 
 ---
@@ -1420,5 +1420,7 @@ Phase 2 착수 시 다음 순서로 구현한다.
 |------|-----------|
 | 2026-03-04 | 초기 아키텍처 설계서 작성 |
 | 2026-03-04 | MVP 구현 완료 반영 — 파일 통계, 테스트 커버리지, 보안 강화, 빌드 검증 추가 |
+| 2026-03-09 | PRD v2.1 리얼라인먼트 — 청약플러스 리브랜딩, Section 17 "+가치 분석 엔진 아키텍처" 설계 추가 |
+| 2026-03-10 | Section 17 구현 완료 — 엔진(8파일), 서비스, API, UI(4컴포넌트) 프로덕션 배포 |
 | 2026-03-05 | 배포 인프라 설계 추가 — Vercel 설정, 보안 헤더, Supabase 구성 |
 | 2026-03-05 | 공공데이터 API 연동 구현 — 청약홈 API 클라이언트, 동기화 서비스, Cron 엔드포인트, DB 마이그레이션 (`docs/public-api-integration.md` 참조) |

@@ -11,8 +11,8 @@
 |---|---|
 | 서비스명 | 청약플러스 (ChungYak Plus) |
 | 버전 | v2.1 |
-| 최종 수정일 | 2026-03-09 |
-| 상태 | MVP 완료, PRD 재정렬 진행 중 |
+| 최종 수정일 | 2026-03-10 |
+| 상태 | MVP 완료, Phase 2 진행 중 (+가치 구현 완료) |
 | 대상 플랫폼 | PWA (모바일 퍼스트) → 추후 네이티브 앱 |
 
 ---
@@ -169,7 +169,7 @@
 **트리거**: 사용자가 관심 단지를 선택
 **플랜 제한**: Free(비활성), Plus 이상
 **완료 조건**: A~F 투자 가치 등급 산출 완료
-**구현 상태**: 미구현 (스텁)
+**구현 상태**: ✅ 구현 완료 (2026-03-10 프로덕션 배포)
 
 #### 등급 산정 기준
 
@@ -265,7 +265,7 @@ Macro Layer: 금리, 정책, 공급량, 규제
 /dashboard                  → 메인 대시보드 (NEW — 스텁)
 /complexes                  → 단지 목록/검색
 /complexes/[id]             → 단지 상세
-/complexes/[id]/value       → +가치 분석 탭 (NEW — 스텁)
+/complexes/[id]/value       → +가치 분석 탭 (구현 완료)
 /complexes/[id]/prediction  → +예측 탭 (NEW — 스텁)
 /complexes/[id]/protection  → +보호 탭 (NEW — 스텁)
 /complexes/[id]/eligibility → +자격 판정 탭
@@ -297,19 +297,19 @@ Macro Layer: 금리, 정책, 공급량, 규제
 | POST | /api/notifications/[id]/read | 알림 읽음 |
 | POST | /api/cron/sync-complexes | 데이터 동기화 |
 
-### 7.2 신규 API (스텁)
+### 7.2 신규 API
 
-| 메서드 | 경로 | 설명 | 플랜 |
-|--------|------|------|------|
-| GET | /api/complexes/[id]/value | +가치 분석 | Plus+ |
-| GET | /api/complexes/[id]/prediction | +예측 경쟁률 | Plus Pro |
-| GET | /api/complexes/[id]/protection | +보호 시그널 | Plus Pro |
-| GET | /api/complexes/[id]/report | +리포트 PDF | Plus Pro |
-| POST | /api/interests | 관심 단지 추가 | 전체 |
-| GET | /api/interests | 관심 단지 목록 | 전체 |
-| POST | /api/compare | 단지 비교 | Plus Pro |
-| GET | /api/subscription | 구독 상태 | 전체 |
-| POST | /api/simulation/points | 가점 시뮬레이션 | Plus Pro |
+| 메서드 | 경로 | 설명 | 플랜 | 상태 |
+|--------|------|------|------|------|
+| GET | /api/complexes/[id]/value | +가치 분석 | Plus+ | ✅ 구현 |
+| GET | /api/complexes/[id]/prediction | +예측 경쟁률 | Plus Pro | 🔲 스텁 |
+| GET | /api/complexes/[id]/protection | +보호 시그널 | Plus Pro | 🔲 스텁 |
+| GET | /api/complexes/[id]/report | +리포트 PDF | Plus Pro | 🔲 스텁 |
+| POST | /api/interests | 관심 단지 추가 | 전체 | 🔲 스텁 |
+| GET | /api/interests | 관심 단지 목록 | 전체 | 🔲 스텁 |
+| POST | /api/compare | 단지 비교 | Plus Pro | 🔲 스텁 |
+| GET | /api/subscription | 구독 상태 | 전체 | 🔲 스텁 |
+| POST | /api/simulation/points | 가점 시뮬레이션 | Plus Pro | 🔲 스텁 |
 
 ---
 
@@ -332,7 +332,7 @@ Macro Layer: 금리, 정책, 공급량, 규제
 
 | 우선순위 | 기능 | 상태 |
 |---|---|---|
-| P0 | +가치 분석 기본 (분양가 적정성 + 입지 점수) | 🔲 스텁 |
+| P0 | +가치 분석 기본 (분양가 적정성 + 입지 점수) | ✅ 완료 |
 | P0 | +예측 엔진 (Base Layer) | 🔲 스텁 |
 | P0 | +보호 시스템 (GO/WAIT/SKIP) | 🔲 스텁 |
 | P0 | 유료 구독 결제 (Plus / Plus Pro) | 🔲 스텁 |
