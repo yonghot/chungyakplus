@@ -186,3 +186,7 @@ constants/        → 상수 및 설정값
 ### 9.7 프론트엔드 타입은 반드시 API 실제 응답 구조와 일치시킨다
 - **교훈**: `/recommend` 페이지가 `{ recommendations: RecommendedComplex[] }` 타입을 기대했으나 API는 `RecommendedComplex[]`를 직접 반환하여 `data.recommendations`가 `undefined` → `Cannot read properties of undefined (reading 'length')` 런타임 에러 발생. 또한 필드명 불일치(`eligibleTypes`/`totalTypes` vs `eligibleCount`)
 - **재발 방지**: 클라이언트 컴포넌트의 `useQuery<T>` 제네릭 타입과 props 인터페이스는 API 라우트 → 서비스 레이어의 실제 반환 타입을 추적하여 정확히 일치시킨다. `successResponse(data)` 래퍼가 `{ data: T, error: null }` 구조를 만들므로, `T`에 해당하는 실제 타입을 확인한다
+
+### 9.8 Supabase Auth 사용자 직접 삽입 시 텍스트 컬럼 NULL 금지
+- **교훈**: `auth.users`에 SQL로 직접 INSERT할 때 `email_change`, `phone`, `phone_change` 등 텍스트 컬럼이 NULL로 남으면 GoTrue(Go)의 `sql.Scan`이 `converting NULL to string is unsupported` 에러를 발생시켜 "Database error querying schema" 로그인 실패
+- **재발 방지**: `auth.users`에 직접 삽입할 때 `email_change`, `phone`, `phone_change`, `confirmation_token`, `recovery_token`, `email_change_token_new`, `email_change_token_current`, `phone_change_token`, `reauthentication_token` 컬럼에 반드시 빈 문자열(`''`)을 명시한다. 대시보드나 Admin API를 통한 생성이 더 안전하다

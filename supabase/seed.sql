@@ -13,9 +13,15 @@
 -- 로컬 Supabase에서는 auth.users + auth.identities + profiles 전부 삽입한다.
 
 -- [로컬 전용] Auth 사용자 생성 (원격에서는 이미 대시보드로 생성됨)
+-- 주의: 텍스트 컬럼에 NULL이 들어가면 GoTrue의 Go sql.Scan이 실패한다.
+--       반드시 빈 문자열('')을 명시해야 "Database error querying schema" 방지.
 INSERT INTO auth.users (
   instance_id, id, aud, role, email, encrypted_password,
   email_confirmed_at,
+  email_change, phone, phone_change,
+  confirmation_token, recovery_token,
+  email_change_token_new, email_change_token_current,
+  phone_change_token, reauthentication_token,
   raw_app_meta_data, raw_user_meta_data,
   created_at, updated_at
 ) VALUES (
@@ -25,6 +31,10 @@ INSERT INTO auth.users (
   'admin@admin.com',
   crypt('admin123!', gen_salt('bf')),
   now(),
+  '', '', '',
+  '', '',
+  '', '',
+  '', '',
   '{"provider":"email","providers":["email"]}',
   '{"name":"관리자"}',
   now(), now()
