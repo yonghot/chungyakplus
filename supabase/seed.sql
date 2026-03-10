@@ -1,8 +1,61 @@
 -- ============================================================================
--- ChungYakMate (청약메이트) - Seed Data
+-- 청약플러스 (ChungYak Plus) - Seed Data
 -- Created: 2026-03-04
 -- Description: Realistic Korean housing complex data and eligibility rules
 -- ============================================================================
+
+-- ============================================================================
+-- AUTH USERS & PROFILES (개발/테스트용 계정)
+-- ============================================================================
+
+-- 관리자 계정: admin@admin.com / admin123!
+-- 원격 Supabase에서는 대시보드로 Auth 사용자를 먼저 생성한 뒤 아래 프로필만 삽입한다.
+-- 로컬 Supabase에서는 auth.users + auth.identities + profiles 전부 삽입한다.
+
+-- [로컬 전용] Auth 사용자 생성 (원격에서는 이미 대시보드로 생성됨)
+INSERT INTO auth.users (
+  instance_id, id, aud, role, email, encrypted_password,
+  email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data,
+  created_at, updated_at
+) VALUES (
+  '00000000-0000-0000-0000-000000000000',
+  'a0000000-0000-0000-0000-000000000001',
+  'authenticated', 'authenticated',
+  'admin@admin.com',
+  crypt('admin123!', gen_salt('bf')),
+  now(),
+  '{"provider":"email","providers":["email"]}',
+  '{"name":"관리자"}',
+  now(), now()
+) ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO auth.identities (
+  id, user_id, provider_id, provider,
+  identity_data, last_sign_in_at,
+  created_at, updated_at
+) VALUES (
+  'a0000000-0000-0000-0000-000000000001',
+  'a0000000-0000-0000-0000-000000000001',
+  'admin@admin.com', 'email',
+  '{"sub":"a0000000-0000-0000-0000-000000000001","email":"admin@admin.com"}',
+  now(), now(), now()
+) ON CONFLICT (provider_id, provider) DO NOTHING;
+
+-- 프로필 생성 (로컬: 위 auth.users의 UUID 사용)
+INSERT INTO profiles (
+  id, name, birth_date,
+  is_household_head, marital_status,
+  dependents_count, has_won_before,
+  profile_completion
+) VALUES (
+  'a0000000-0000-0000-0000-000000000001',
+  '관리자', '1990-01-01',
+  true, 'single',
+  0, false,
+  30
+) ON CONFLICT (id) DO NOTHING;
+
 
 -- ============================================================================
 -- COMPLEXES (15 realistic Korean housing complexes)
