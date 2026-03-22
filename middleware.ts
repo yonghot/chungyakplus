@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/middleware';
 
 const PUBLIC_ROUTES = new Set(['/', '/login', '/signup', '/api/health']);
 
+/** 인증 없이 접근 가능한 API 경로 접두사 */
+const PUBLIC_API_PREFIXES = ['/api/map/'];
+
 const AUTH_ONLY_ROUTES = new Set(['/login', '/signup']);
 
 export async function middleware(request: NextRequest) {
@@ -15,7 +18,8 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 미인증 사용자 -> 보호 라우트 접근 시 로그인 페이지로 리다이렉트
-  if (!user && !PUBLIC_ROUTES.has(pathname)) {
+  const isPublicApi = PUBLIC_API_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+  if (!user && !PUBLIC_ROUTES.has(pathname) && !isPublicApi) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = '/login';
     loginUrl.searchParams.set('redirect', pathname);
