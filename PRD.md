@@ -423,3 +423,225 @@ Macro Layer: 금리, 정책, 공급량, 규제
 최종 의사결정은 반드시 본인의 판단으로 이루어져야 합니다.
 청약플러스는 분석 결과의 정확성을 보증하지 않습니다.
 ```
+
+---
+
+## 11. 사용자 정의 (User Personas)
+
+### 11.1 주요 사용자 유형
+
+| 유형 | 설명 | 핵심 니즈 | 주요 사용 기능 |
+|------|------|-----------|----------------|
+| **청약 초보자** | 28~35세, 첫 청약 도전자. 자격 요건과 공급 유형이 혼란스럽다. | "내가 신청할 수 있는 건지" 자격 확인 | +자격 판정, 맞춤 추천, 온보딩 프로필 카드 |
+| **재도전자** | 33~42세, 3회 이상 낙첨 경험자. 기회 소진에 대한 불안이 크다. | "이번 청약이 넣을 만한 가치가 있는지" 판단 | +가치 분석(A~F 등급), +보호(GO/WAIT/SKIP), +리포트 |
+| **실수요 투자자** | 35~50세, 청약 경험이 있고 수익성까지 고려한다. | "분양가 대비 5년 후 시세 상승 가능성" 예측 | +가치 분석, +예측 경쟁률, +비교(단지 3개) |
+| **정보 수집자** | 25~45세, 아직 청약 계획이 없지만 시장 동향을 파악하고 싶다. | 분양 일정 파악 및 조건 변동 알림 수신 | 분양 일정 캘린더, 알림 센터, 단지 검색/조회 |
+
+### 11.2 사용자 시나리오
+
+**시나리오 A — 청약 초보자의 첫 자격 확인**
+
+```
+1. 앱 첫 접속 → 온보딩 스플래시 (/onboarding)
+2. 이메일 로그인 후 4단계 프로필 입력
+   (기본 정보 → 세대 정보 → 자산 정보 → 청약 이력)
+3. 청약 프로필 카드 생성 — 총 가점 자동 계산 (84점 만점)
+4. 맞춤 추천 (/recommend) — 자격 충족 단지 자동 필터링
+5. 관심 단지 선택 → /complexes/[id]/eligibility — 7개 공급유형별 판정 확인
+```
+
+**시나리오 B — 재도전자의 가치 분석 기반 의사결정**
+
+```
+1. 로그인 후 /complexes — 단지 목록 검색
+2. 관심 단지 선택 → /complexes/[id]/value — +가치 분석 탭
+3. 분양가 적정성 35% + 입지 환경 35% + 미래 시세 30% 종합 → A~F 등급 확인
+4. (Phase 2 완료 후) /complexes/[id]/protection — GO/WAIT/SKIP 최종 판정 확인
+5. Plus Pro 플랜 가입 → +리포트 PDF 다운로드
+```
+
+**시나리오 C — 분양 일정 알림 수신**
+
+```
+1. /calendar — 월별 분양 일정 확인
+2. 관심 단지 북마크 등록
+3. 알림 설정 — D-7, D-3, D-1 푸시 알림 수신 (notifications 테이블)
+4. /notifications — 알림 센터에서 읽음 처리
+```
+
+---
+
+## 12. 비기능 요구사항 (Non-Functional Requirements)
+
+### 12.1 성능
+
+- 페이지 초기 로드: 3G 기준 3초 이내 (Next.js RSC + Vercel Edge Network 활용)
+- API 응답 시간: 95 퍼센타일 500ms 이내 (Supabase 서울 리전 + Vercel ICN1)
+- +가치 분석 API (`/api/complexes/[id]/value`): 첫 계산 1초 이내, TanStack Query 캐시 재사용 시 즉시 반환
+- Lighthouse 점수 목표: Performance 90+, Accessibility 90+, Best Practices 90+
+- Core Web Vitals 목표: LCP < 2.5s, FID < 100ms, CLS < 0.1
+- 번들 크기: 초기 로드 500KB 이내, 전체 2MB 이내
+
+### 12.2 보안
+
+**인증 및 세션**
+- Supabase Auth 기반 JWT 세션 관리 (`@supabase/ssr` 쿠키 방식)
+- 미들웨어(`middleware.ts`)에서 모든 보호 라우트 사전 차단: 미인증 사용자 → `/login?redirect=` 리다이렉트
+- 인증된 사용자의 로그인/회원가입 접근 → `/complexes` 자동 리다이렉트
+- 오픈 리다이렉트 방지: `redirect` 파라미터는 `/`로 시작하는 상대 경로만 허용 (CLAUDE.md 9.1)
+
+**데이터 접근 제어**
+- Supabase Row Level Security(RLS) 전 테이블 적용:
+  - `profiles`, `eligibility_results`, `notifications`, `bookmarks`: `auth.uid() = user_id` 조건의 본인만 CRUD
+  - `complexes`, `eligibility_rules`: 인증 여부 무관 읽기 허용
+  - `sync_logs`: 서비스 롤(`service_role`)만 쓰기 허용
+- `SUPABASE_SERVICE_ROLE_KEY`는 서버 전용 — 클라이언트 노출 금지, API Routes에서만 사용
+
+**API 보안**
+- Cron 엔드포인트(`/api/cron/*`)는 `CRON_SECRET` 헤더 검증으로 보호
+- 시크릿 비교는 `crypto.timingSafeEqual()` 사용 — 타이밍 공격 방지 (CLAUDE.md 9.2)
+- 모든 API 입력값은 zod 스키마로 서버 사이드 검증
+- 공공 데이터 API 키(`APPLYHOME_API_KEY`)는 서버 전용 환경변수 — `NEXT_PUBLIC_` 접두사 없음
+
+**기타**
+- 환경변수 non-null 단언(`!`) 금지 — 런타임 명시적 null 체크 후 에러 throw (CLAUDE.md 9.4)
+- 사용자 노출 에러 메시지는 내부 구현 상세를 포함하지 않음
+- `NEXT_PUBLIC_ENV` 변수로 개발/스테이징/프로덕션 환경 구분
+
+### 12.3 가용성
+
+| 구성 요소 | 제공사 SLA | 목표 가용성 |
+|-----------|-----------|------------|
+| 프론트엔드 + API Routes | Vercel (ICN1 서울 리전) | 99.9% (월 43분 이내 다운) |
+| 데이터베이스 + Auth | Supabase (PostgreSQL) | 99.9% |
+| 스태틱 자산 CDN | Vercel Edge Network | 99.99% |
+| 외부 데이터 동기화 (Cron) | 청약홈 공공 API 의존 | 일 1회 재시도 포함 |
+
+- Cron 동기화 실패 시 재시도 없이 `sync_logs` 테이블에 실패 기록 → 다음 스케줄 자동 재실행
+- 공공 API 장애 시 기존 DB 데이터로 서비스 정상 제공 (읽기 전용 degraded mode)
+- `/api/health` 엔드포인트를 통한 외부 모니터링 헬스체크 지원
+
+### 12.4 확장성
+
+**수평 확장**
+- Next.js API Routes는 Vercel 서버리스 함수로 배포 — 요청량에 따라 자동 스케일링
+- Supabase Postgres는 커넥션 풀링으로 동시 접속 처리; 트래픽 급증 시 Supabase Pro 플랜으로 인스턴스 업그레이드
+
+**아키텍처 확장 포인트**
+- 리포지토리 레이어(`lib/repositories/`) 분리로 Supabase → 다른 DB 전환 시 서비스 레이어 무변경
+- 서비스 레이어(`lib/services/`) 독립성으로 API Routes → Server Actions 전환 용이
+- 판정 엔진(`lib/eligibility/`)은 순수 함수 구조로 외부 서비스(Edge Function 등) 이식 가능
+- `lib/value-analysis/` 엔진은 순수 함수 11팩터 분리 구조 — 신규 팩터 추가 시 기존 로직 무변경
+
+**데이터 확장**
+- Supabase Storage: 사용자 첨부 파일(향후 +리포트 PDF) 저장
+- Supabase Realtime: 경쟁률 실시간 추이(Phase 3) 구현 시 웹소켓 채널 활용 가능
+- `historical_competition` 테이블은 과거 경쟁률 누적 → +예측 Base Layer 학습 데이터로 활용
+
+---
+
+## 13. 배포 및 인프라
+
+### 13.1 배포 환경
+
+**프로덕션**
+
+| 구성 요소 | 서비스 | 상세 |
+|-----------|--------|------|
+| 프론트엔드 + API | Vercel | ICN1 서울 리전, 자동 HTTPS |
+| 데이터베이스 | Supabase | PostgreSQL 15, 서울 리전 |
+| Auth | Supabase Auth (GoTrue) | 이메일 + OAuth 소셜 로그인 |
+| 스토리지 | Supabase Storage | 향후 리포트 파일 저장용 |
+| CDN | Vercel Edge Network | 정적 자산 전 세계 배포 |
+| 도메인 | chungyakplus.vercel.app | Vercel 기본 도메인 (추후 커스텀 도메인 전환 검토) |
+
+**로컬 개발**
+
+```
+Supabase 로컬 스택 (supabase/config.toml):
+  - API:       http://localhost:54321
+  - Database:  localhost:54322 (PostgreSQL 15)
+  - Studio:    http://localhost:54323
+  - Inbucket:  http://localhost:54324 (이메일 테스트)
+
+Next.js 개발 서버: http://localhost:3000
+환경변수: .env.local (cp .env.example .env.local)
+```
+
+**마이그레이션 파일**
+
+```
+supabase/migrations/
+  20260304000000_init.sql           → 초기 스키마 (profiles, complexes 등 핵심 테이블)
+  20260305000000_add_sync_fields.sql → 동기화 필드 추가
+```
+
+### 13.2 CI/CD
+
+**현재 배포 방식**
+- GitHub `master` 브랜치 푸시 → Vercel 자동 빌드 및 프로덕션 배포 (Vercel GitHub 통합)
+- Pull Request → Vercel Preview 배포 자동 생성 (PR별 고유 URL)
+- GitHub Actions 워크플로우 파일 미구성 상태 — 별도 CI 파이프라인 없음
+
+**배포 전 수동 검증 절차 (CLAUDE.md 8절)**
+```
+1. npm run type-check   → TypeScript 오류 확인
+2. npm run lint         → ESLint 규칙 위반 확인
+3. npm run test         → Vitest 단위 테스트 실행
+4. npm run build        → Next.js 프로덕션 빌드 성공 확인
+5. git push origin master → Vercel 자동 배포 트리거
+```
+
+**Cron 스케줄 (`/api/cron/sync-complexes`)**
+- Vercel Cron Jobs 또는 외부 스케줄러에서 `CRON_SECRET` 헤더와 함께 일 1회 호출
+- 청약홈 공공 API에서 분양 단지 정보 동기화 → `complexes`, `sync_logs` 테이블 갱신
+
+**향후 개선 계획**
+- GitHub Actions 워크플로우 추가: PR 시 자동 lint + type-check + test 실행
+- Supabase 마이그레이션 자동 적용 파이프라인 구성
+
+### 13.3 모니터링
+
+**현재 구성**
+
+| 항목 | 도구 | 상태 |
+|------|------|------|
+| 프론트엔드 에러 추적 | Sentry | 설정 예정 (package.json 미포함, PRD 2.2 명시) |
+| 웹 성능 분석 | Vercel Analytics | Vercel 대시보드 자동 수집 |
+| 서버 헬스체크 | GET /api/health | 운영 중 — `{ status: "ok", timestamp, version }` 반환 |
+| 데이터 동기화 이력 | sync_logs 테이블 | DB에 성공/실패 기록 |
+| 로컬 개발 로그 | lib/utils/logger.ts | 환경별 로그 레벨 제어 (`no-console` 규칙 준수) |
+
+**모니터링 개선 계획 (Phase 2)**
+- Sentry 연동: 런타임 에러 캡처, 사용자 컨텍스트 포함 (GDPR 고려하여 PII 제외)
+- Vercel Analytics 대시보드를 통한 Core Web Vitals 상시 모니터링
+- `/api/health` 엔드포인트를 외부 업타임 모니터 (예: Better Uptime)에 등록
+
+---
+
+## 14. 성공 지표 (KPI)
+
+### 14.1 비즈니스 지표
+
+| 지표 | 목표 (Phase 2 베타 출시 시점) | 측정 방법 |
+|------|------------------------------|-----------|
+| 가입자 수 | 1,000명 | Supabase Auth 사용자 수 |
+| 월간 활성 사용자 (MAU) | 가입자의 40% 이상 | Vercel Analytics 세션 기준 |
+| Plus 이상 유료 전환율 | 가입자의 5% 이상 | subscription 플랜 필드 (`profiles.plan_type`) 집계 |
+| +가치 분석 실행 횟수 | MAU당 월 2회 이상 | `/api/complexes/[id]/value` 호출 로그 |
+| 자격 판정 실행 횟수 | MAU당 월 3회 이상 | `eligibility_results` 테이블 신규 레코드 수 |
+| 알림 오픈율 | 30% 이상 | `notifications` 테이블 read 전환 비율 |
+| 사용자 이탈률 (온보딩) | 프로필 완성까지 50% 이상 완료 | `profiles.is_complete` 필드 완성 비율 |
+
+### 14.2 기술 지표
+
+| 지표 | 목표 | 현재 (2026-03-15 기준) |
+|------|------|------------------------|
+| 빌드 성공 여부 | 항상 GREEN | GREEN (npm run build 통과) |
+| 테스트 통과 수 | 500개 이상 | 505개 통과 (21개 파일, 1개 파일 jsdom 의존성 오류) |
+| TypeScript 타입 에러 | 0개 | 0개 (any 타입 전면 금지) |
+| API 평균 응답 시간 | 500ms 이하 | 측정 미구성 (Vercel Analytics 통해 확인 예정) |
+| 프로덕션 에러율 | 0.1% 이하 | 측정 미구성 (Sentry 연동 전) |
+| Lighthouse Performance | 90+ | 측정 예정 |
+| DB 마이그레이션 파일 수 | 변경 시 증분 관리 | 2개 (타임스탬프 기반 관리) |
+| 코드 파일 크기 | 파일당 300줄 이하 | CLAUDE.md 2절 규칙 준수 중 |
