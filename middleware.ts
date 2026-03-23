@@ -9,17 +9,22 @@ const PUBLIC_API_PREFIXES = ['/api/map/'];
 const AUTH_ONLY_ROUTES = new Set(['/login', '/signup']);
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // 공개 경로는 인증 체크 없이 바로 통과
+  const isPublicApi = PUBLIC_API_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+  if (PUBLIC_ROUTES.has(pathname) || isPublicApi) {
+    return NextResponse.next();
+  }
+
   const { supabase, response } = createClient(request);
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
-
   // 미인증 사용자 -> 보호 라우트 접근 시 로그인 페이지로 리다이렉트
-  const isPublicApi = PUBLIC_API_PREFIXES.some((prefix) => pathname.startsWith(prefix));
-  if (!user && !PUBLIC_ROUTES.has(pathname) && !isPublicApi) {
+  if (!user) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = '/login';
     loginUrl.searchParams.set('redirect', pathname);
